@@ -1,0 +1,94 @@
+【汇总的规则】
+    {}
+        所有变量都要用这个包围
+    数据源:sql
+        SQL语句必须带上数据源，否则不方便执行
+    $DATA
+        request请求中的所有数据
+    $SESSION
+        session中所有数据
+    $COOKIE
+        cookie中所有数据
+
+    函数
+        $seq('jiaorder','unit','{$session.service_id}')
+            生成数据库主键(数据源，依据1，依据2)
+        $datetime('yyyy-mm-dd hh:mm:ss')
+            生成日期(日期格式)
+
+    SQL中变量
+        {$ALL_COLUMN}
+            代表 INSERT 语句中所有对应在value的字段
+        {$DATA}
+            代表 INSERT 语句中，所有带有表前缀的字段
+
+
+
+【数据获取的途径,包括以下几个上下文】
+
+    $data        即 request 请求中\后期添加的,所有的数据 不支持省略$data的写法  TODO 要不要分为REQ与DATA两种?
+    $session     即 SESSION 中
+    $cookie      即 COOKIE 中
+
+    所有的变量引用，都要用{}包围，方便在系统中匹配到
+
+【data段】
+    支持的语法：
+    $seq('unit')    即生成序列号，以'unit'做为生成依据
+    $data.unit.id   即data中的unit.id字段
+    $datetime('yyyy-mm-dd hh:mm:ss')       即生成日期，并提供日期的格式（可以不写后面）
+    $datetime       默认生成全路径的日期
+
+    写在后面的规则，可以使用前台规则中产生的新变量，比如
+        "unit.id":"$seq('unit')",
+        "unit.order_num":"$data.unit.id",
+
+    data段，是应用在initdata时，是一个强制写数据的段，是强制写，是强制写，是强制写。 没有条件
+
+【validate段】
+    def     设置默认值，判断字段的值如果为空，则给予默认值
+    isNull  不能为空
+    isNum   必须为数字
+
+
+【变量】
+    $seq('jiaorder','unit','{$session.service_id}')
+        序列号生成变量：
+            数据源名称
+            序列号依据1（表）
+            序列号依据2（数据域）
+
+    $datetime('yyyy-mm-dd hh:mm:ss')
+        生成时间
+            时间的格式
+
+    目前这一版，变量只能独立应用，不能组合；
+    主要是 getValueByFiled 方法的实现逻辑，没有做组合式
+    并且如果做组合式$data.xxx的表达式就要改为 {$data.aaa.bbb}这样的。要包裹
+
+
+【SQL语句写法】
+
+数据源:SQL
+    采用这种写法，方便执行时，确定要向哪个数据源操作
+
+一些常用SQL示例（为了方便，就不在这里写前面的数据源，实际应用时要按标准格式书写）
+    INSERT INTO unit ({$column}) values ({$data})
+        $column代表着，所有与$data相对应的字段
+
+    UPDATE unit SET type='xx',state=1 WHERE service_id={$data.service_id}
+
+    DELETE FROM unit WHERE service_id = '{$data.service_id}'
+
+    SELECT * FROM unit WHERE service_id = '{$data.service_id}'
+        todo 如何识别出，这个*是哪个表呢？ 还需要将结果集回填到一个HASHMAP中
+
+    SELECT COUNT(*) AS count FROM unit
+        TODO 这个怎么回填至hashmap中呢
+
+    SELECT unit.*,unit_class.class_name FROM unit as unit LEFT JOIN unit_class as unit_class ON unit.class_id = unit_class.class_id WHERE unit.service_id = '$data.service_id'
+        所有的AS别名，都以表名称命名，方便将结果集，回填至hashmap，并能识别出来对应的表与字段
+
+    SELECT * FROM unit LIMIT 0,10
+    SELECT * FROM unit LIMIT $pn    todo ? 这一种好，还是上一种好
+

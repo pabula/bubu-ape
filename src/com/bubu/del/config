@@ -1,0 +1,114 @@
+/****************************************
+* 绑定的表模型
+****************************************/
+.table{
+    "aaa",
+    "bbb"
+}
+
+/****************************************
+* REQUEST中报文 向 VO 中填充的规则
+****************************************/
+.data{
+    "TABLE.ORDER_NUM":"BEAN.setOrderNum()",
+}
+
+.def{
+    "TABLE.SERVICE_ID":"SESSION.SERVICE_ID",
+    "TABLE.LEVEL":"100"
+}
+
+
+#STRING TO NUM 字符转成数字
+REQ.NUM def 0
+REQ.LEVEL def 100
+
+
+
+/****************************************
+* VALIDATE规则
+****************************************/
+.validate{
+    "isNull":{   #不能为空
+        "TABLE.NAME":"名称不能为空",
+        "TABLE.CLASS_ID":"请选择所属分类",
+        "SESSION.SERVICE_ID":"得到不您的系统ID,您无法使用此系统",
+        "SESSION.IS_LOGIN":"请您登录"
+     },
+     "isNum":{  #必须为数字
+        "TABLE.COUNT":"数量必须为数字",
+        "addType":"操作类型必须为数字"       #这是一个在前台特别定义的变量,不是数据库字段
+     }
+}
+
+
+
+
+/****************************************
+* 入库的规则  底层写SQL式(上层设计一个可视化设计器,可以构建这个SQL)
+****************************************/
+
+add{
+    "DB":"数据源1(可分库)",       //数据库连接源(另外有配置定义)
+    "CACHE":"$DATA.TABLE.ID,$DATA.TABLE.SERVICE_ID",    //缓存的KEY
+    "CACHE_UPDATE":"true",  //是否更新缓存
+    "CACHE_RELOAD":"true",  //执行后,是否重新加载缓存
+    "SQL":"INSERT INTO $TABLE ($INSERT_COLUMN_NAME) values ($INSERT_COLUMN_VALUE)",     //第1个SQL
+    "SQL":"INSERT INTO $TABLE ($INSERT_COLUMN_NAME) values ($INSERT_COLUMN_VALUE)",     //第2个SQL,可以写多个SQL
+    "IS_BATCH":"false"      //是否批量执行
+    "IS_ROLLBACK":"false"   //是否回滚
+}
+
+getById{
+    "DB":"数据源1(可分库)",
+    "CACHE":"$DATA.TABLE.ID,$DATA.TABLE.SERVICE_ID",
+    "CACHE_UPDATE":"true",
+    "CACHE_RELOAD":"true",
+    "SQL":"SELECT $SELECT_COLUMN FROM $TABLE $LEFT_JOIN $WHERE $GROUP $HAVING $ORDER $DESC"
+}
+
+
+modify{
+    "DB":"数据源1(可分库)",
+    "CACHE":"$DATA.TABLE.ID,$DATA.TABLE.SERVICE_ID",
+    "CACHE_UPDATE":"true",
+    "CACHE_RELOAD":"true",
+    "SQL":"update TABLE set TABLE.COLUMN = $DATA.TABLE.COLUMN  where TABLE.COLUMN=$DATA.TABLE.COLUMN"
+}
+
+del{
+    "DB":"数据源1(可分库)",
+    "CACHE":"$DATA.TABLE.ID,$DATA.TABLE.SERVICE_ID",
+    "CACHE_UPDATE":"true",
+    "CACHE_RELOAD":"true",
+    "SQL":"DELETE FROM $TABLE $WHERE"
+}
+
+queryAll{
+    "DB":"数据源1(可分库)",
+    "CACHE":"$DATA.TABLE.ID,$DATA.TABLE.SERVICE_ID",
+    "CACHE_UPDATE":"true",
+    "CACHE_RELOAD":"true",
+    "SQL":"SELECT $SELECT_COLUMN FROM $TABLE $LEFT_JOIN $WHERE $GROUP $HAVING $ORDER $DESC"
+}
+
+
+
+/****************************************
+* 切面编程配置
+****************************************/
+qie1 = com.bubu.test.aaa
+
+
+
+/****************************************
+* 返回页面
+****************************************/
+url = index.jsp
+
+
+
+/****************************************
+* 返回值
+****************************************/
+param = table.a,table,b,tableVO

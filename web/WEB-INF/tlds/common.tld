@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+
+<taglib>
+
+    <tlib-version>1.0</tlib-version>
+    <jsp-version>2.0</jsp-version>
+   
+    <uri></uri>
+    <small-icon></small-icon>
+    <description>pabula</description>
+
+    <tag>
+		<name>list</name>
+		<tag-class>com.pabula.fw.tag.ListTag</tag-class>
+        <tei-class>com.pabula.fw.tag.CommonTagExtraInfo</tei-class>
+		<body-content>JSP</body-content>
+		<description>ListTag</description>
+
+        <attribute>
+            <name>vo</name>
+            <required>true</required>
+        </attribute>
+
+		<attribute>
+          <name>name</name>
+          <required>true</required>
+        </attribute>
+
+		<attribute>
+			<name>coll</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+          <type>java.util.Collection</type>
+		</attribute>
+	</tag>
+
+  <tag>
+    <name>vo</name>
+    <tag-class>com.pabula.fw.tag.VOTag</tag-class>
+    <tei-class>com.pabula.fw.tag.CommonTagExtraInfo</tei-class>
+    <body-content>JSP</body-content>
+    <description>VOTag</description>
+
+    <!--<variable>-->
+      <!--<name-given>member_info</name-given>-->
+      <!--<variable-class>com.pabula.hh.member.vo.MemberVO</variable-class>-->
+      <!--<declare>true</declare>-->
+      <!--<scope>AT_BEGIN</scope>-->
+    <!--</variable>-->
+
+    <attribute>
+      <name>name</name>
+      <required>true</required>
+    </attribute>
+
+    <attribute>
+      <name>vo</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+      <type>com.pabula.fw.utility.VO</type>
+    </attribute>
+  </tag>
+
+</taglib>

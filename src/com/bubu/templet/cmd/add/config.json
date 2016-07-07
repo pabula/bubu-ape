@@ -1,0 +1,93 @@
+{
+
+  /****************************************
+  * 绑定的表模型
+  ****************************************/
+  "table":[
+      "aaa","bbb"
+  ],
+
+  /****************************************
+  * 数据处理（强制将数据设置为某个值，不管前台传来的情况如何）
+  ****************************************/
+  "data":{
+      "TABLE.ORDER_NUM":"BEAN.setOrderNum()",
+      "TABLE.ORDER_NUM":"BEAN.setOrderNum()"
+  },
+
+  /****************************************
+  * 默认值（从前台传来的数据中为空时，给予的默认值）
+  ****************************************/
+  "def":{
+      "TABLE.SERVICE_ID":"SESSION.SERVICE_ID",
+      "TABLE.LEVEL":"100"
+  },
+
+
+  /****************************************
+  * VALIDATE规则
+  ****************************************/
+  "validate":{
+      "isNull":{   //不能为空
+          "TABLE.NAME":"名称不能为空",
+          "TABLE.CLASS_ID":"请选择所属分类",
+          "SESSION.SERVICE_ID":"得到不您的系统ID,您无法使用此系统",
+          "SESSION.IS_LOGIN":"请您登录"
+      },
+      "isNum":{   //必须为数字
+          "TABLE.COUNT":"数量必须为数字",
+          "addType":"操作类型必须为数字"       //这是一个在前台特别定义的变量,不是数据库字段
+      }
+  },
+
+
+  /****************************************
+  * 入库的规则  底层写SQL式(上层设计一个可视化设计器,可以构建这个SQL)
+  ****************************************/
+
+  "execute":{
+    "add":{
+      "DB":"数据源1(可分库)",       //数据库连接源(另外有配置定义)
+      "CACHE":"$DATA.TABLE.ID,$DATA.TABLE.SERVICE_ID",    //缓存的KEY
+      "CACHE_UPDATE":"true",  //是否更新缓存
+      "CACHE_RELOAD":"true",  //执行后,是否重新加载缓存
+      "SQL":"INSERT INTO $TABLE ($INSERT_COLUMN_NAME) values ($INSERT_COLUMN_VALUE)",     //第1个SQL
+      "SQL":"INSERT INTO $TABLE ($INSERT_COLUMN_NAME) values ($INSERT_COLUMN_VALUE)",     //第2个SQL,可以写多个SQL
+      "IS_BATCH":"false",      //是否批量执行
+      "IS_ROLLBACK":"false"   //是否回滚
+    },
+    "add2":{
+      "DB":"数据源1(可分库)",       //数据库连接源(另外有配置定义)
+      "CACHE":"$DATA.TABLE.ID,$DATA.TABLE.SERVICE_ID",    //缓存的KEY
+      "CACHE_UPDATE":"true",  //是否更新缓存
+      "CACHE_RELOAD":"true",  //执行后,是否重新加载缓存
+      "SQL":"INSERT INTO user ($TABLE2) values ($INSERT_COLUMN_VALUE)",     //第2个SQL,可以写多个SQL
+      "IS_BATCH":"false",      //是否批量执行
+      "IS_ROLLBACK":"false"   //是否回滚
+    }
+  },
+
+  /****************************************
+  * 切面编程配置
+  ****************************************/
+  "qie":{
+      "com.bubu.test.aaa":"",
+      "com.bubu.test.aaa":""
+  },
+
+
+
+  /****************************************
+    * 返回值
+    ****************************************/
+  "return":{
+    "url":"",     //页面
+    "param":[     //返回的参数
+      "unit.id",
+      "unit.name",
+      "unit.intro",
+      "unit.add_datetime"
+    ]
+  }
+
+}

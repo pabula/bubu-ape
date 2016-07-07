@@ -1,0 +1,91 @@
+
+{
+
+  "ver":{
+    "engine:":"1",
+    "table":"1"
+  },
+
+  "table":{
+    "name":"单位",
+    "code":"unit",
+    "sys":"jiaorder",
+    "model":"product",
+    "intrl":"商品的单位管理",
+    "author":"pabula",
+    "add_datetime":"2015-06-27 17:13"
+  },
+
+  "feature":{
+    "order":"true",
+    "tree_view":"false",
+    "cache":"true",
+    "cache_type":"mem"
+  },
+
+  "column":{
+    "id":{
+      "name":"编号",
+      "code":"id",
+      "intro":"",
+      "def":"$auto",
+      "view":"",
+      "type":"int",
+      "pk":"true",
+      "fk":"true",
+      "index":"true"
+    },
+    "name":{
+      "name":"名称",
+      "code":"name",
+      "intro":"单位的名称",
+      "def":"$auto",
+      "view":"input",
+      "type":"varchar",
+      "pk":"false",
+      "fk":"false",
+      "index":"false"
+    },
+    "intro":{
+      "name":"描述",
+      "code":"intro",
+      "intro":"单位的描述",
+      "def":"$auto",
+      "view":"textarea",
+      "type":"varchar",
+      "pk":"false",
+      "fk":"false",
+      "index":"false"
+    },
+    "state":{
+      "name":"状态",
+      "code":"state",
+      "intro":"1:启用,-1停用",
+      "def":"1",
+      "view":"radio",
+      "type":"int",
+      "pk":"false",
+      "fk":"false",
+      "index":"false"
+    },
+    "add_datetime":{
+      "name":"添加时间",
+      "code":"add_datetime",
+      "intro":"",
+      "view":"",
+      "type":"datetime",
+      "pk":"",
+      "fk":"",
+      "index":""
+    }
+  },
+
+  "relation":{
+    "id_product_unit_id":{
+      "fk_column":"id",
+      "fk_table":"product",
+      "fk_table_column":"unit_id"
+    }
+  }
+
+}
