@@ -137,7 +137,7 @@ public class BuBuController extends HttpServlet {
 
 
 			/********************************
-			 * 校验数据合法性
+			 * 校验数据合法性(validate)
 			 *********************************/
 			if (validate.hasError()) {
 				RuleException e = new RuleException();
