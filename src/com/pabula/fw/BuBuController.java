@@ -9,6 +9,7 @@ import com.pabula.fw.exception.RuleException;
 import com.pabula.fw.exception.SysException;
 import com.pabula.fw.utility.Command;
 import com.pabula.fw.utility.RequestData;
+import com.pabula.fw.utility.ResponseData;
 import org.apache.log4j.Logger;
 import javax.servlet.*;
 import javax.servlet.http.HttpServlet;
@@ -84,8 +85,7 @@ public class BuBuController extends HttpServlet {
 	private void processRequest(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		//CMD返回的值
-		String cmdReturnStr = null;
+
 
 
 		/********************************
@@ -125,7 +125,15 @@ public class BuBuController extends HttpServlet {
 			/********************************
 			 * 执行command
 			 *********************************/
-			cmdReturnStr = command.main(requestData,command,commandJsonObject,validate);
+			//处理完，需要返回给前端的数据
+			ResponseData responseData = new ResponseData(requestData.getResponse(),requestData,commandJsonObject);
+
+			//执行command
+			command.main(requestData,responseData,command,commandJsonObject,validate);
+
+
+			//从responseData中，得到要返回给前台的数据
+			String cmdReturnStr = responseData.getReturnJSON();
 
 
 			/********************************

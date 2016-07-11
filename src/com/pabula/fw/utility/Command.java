@@ -20,7 +20,7 @@ public interface Command {
    * @return
    * @throws DataAccessException
      */
-  String main(RequestData requestData, Command command, JSONObject commandConfig, ValidateUtil validate) throws DataAccessException;
+  void main(RequestData requestData,ResponseData responseData, Command command, JSONObject commandConfig, ValidateUtil validate) throws DataAccessException;
 
   /**
    * 装载数据
@@ -45,7 +45,7 @@ public interface Command {
    * @throws ServletException
    * @throws DataAccessException
    */
-  String execute(RequestData $DATA, HttpServletRequest request) throws DataAccessException;
+  String execute(RequestData $DATA, HttpServletRequest request,ResponseData responseData) throws DataAccessException;
 
 
 }

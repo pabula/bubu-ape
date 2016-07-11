@@ -1,5 +1,6 @@
 package com.pabula.fw.cmd;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.pabula.common.util.DateUtil;
 import com.pabula.common.util.SeqNumHelper;
@@ -11,6 +12,7 @@ import com.pabula.fw.exception.DataAccessException;
 import com.pabula.fw.exception.RuleException;
 import com.pabula.fw.utility.Command;
 import com.pabula.fw.utility.RequestData;
+import com.pabula.fw.utility.ResponseData;
 import com.sun.org.apache.xml.internal.security.Init;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,13 +34,11 @@ public abstract class CommonCommand implements Command{
      * @return
      * @throws DataAccessException
      */
-    public String main(RequestData requestData, Command command, JSONObject commandConfig,ValidateUtil validate) throws DataAccessException{
+    public void main(RequestData requestData,ResponseData responseData ,Command command, JSONObject commandConfig,ValidateUtil validate) throws DataAccessException{
 
         /***************************************
          * 数据处理:通用处理+前切面+CMD实现+后切面
          **************************************/
-
-
 
         //先进行一次标准化的数据处理,再交给客户自己的command
         publicInitData(requestData,commandConfig);
@@ -66,20 +66,18 @@ public abstract class CommonCommand implements Command{
         /***************************************
          * EXECUTE:通用处理+前切面+CMD实现+后切面
          **************************************/
-        String cmdReturnStr = "";
         try {
-            publicExecute(requestData,requestData.getRequest(),commandConfig);    //不需要利用返回值
+            publicExecute(requestData, requestData.getRequest(), commandConfig, responseData);    //不需要利用返回值
 
-            aspectFrontForExecute(requestData, requestData.getRequest()); //aspect: 前置切面，因为这里不是最后一个执行方法，所以不需要返回值赋值
-            cmdReturnStr = command.execute(requestData, requestData.getRequest());    //执行execute
-            cmdReturnStr = aspectBackForExecute(cmdReturnStr,requestData, requestData.getRequest()); //aspect: 后置切面
+            aspectFrontForExecute(requestData, requestData.getRequest(),responseData); //aspect 前置切面，因为这里不是最后一个执行方法，所以不需要返回值赋值
+            command.execute(requestData, requestData.getRequest(),responseData);    //执行 execute
+            aspectBackForExecute(requestData, requestData.getRequest(),responseData); //aspect 后置切面
 
         } catch (DataAccessException e) {
             e.printStackTrace();
             throw e;
         }
 
-        return cmdReturnStr;
     }
 
 
@@ -189,176 +187,6 @@ public abstract class CommonCommand implements Command{
     }
 
     /**
-     * 根据提供的str，替换掉所有的变量，得到最终的字符串
-     * @param requestData
-     * @param str
-     * @return
-     */
-    private String getAllFiledValue(RequestData requestData,String str){
-        String value = str;
-
-        //使用正则，匹配 $datetime('yyyy-mm-dd hh:mm:ss') 这样的，得到参数
-        Pattern pat = Pattern.compile("\\{(.*?)\\}");     //正则匹配： {}
-        Matcher mat = pat.matcher(value);
-
-        for(int i = 1;i<=mat.groupCount();i++){
-            String ruleStr = mat.group(i);  //匹配{}中间的内容
-            String ruleValue = getValueByFiled(requestData,ruleStr);    //将变量替换为值
-            StrUtil.replaceAll(value,ruleStr,ruleValue);    //替换掉原文中的变量为值
-        }
-
-        return value;
-    }
-
-    /**
-     * 根据提供的值（可能是带变量的），将值中的变量替换后返回具体的值
-     * @param ruleStr
-     * @return
-     */
-    public  String getValueByRuleStr(RequestData requestData,String ruleStr){
-        String value = ruleStr;
-        if(ruleStr.startsWith("$")){
-
-            /****************************
-             * 序列号处理
-             * $seq('db_source','table_name','$session.service_id')
-             * $seq('数据源','表','业务域')
-             ***************************/
-            if(ruleStr.startsWith("$seq")){
-
-                String dbSource = "";   //数据源: 比如 java
-                String type1 = "";  //表格：比如 product
-                String type2 = "";   //业务：比如service_id
-
-                //使用正则，匹配seq('xxx')这样的，得到seq的参数
-                Pattern pat = Pattern.compile("\'(.*?)\'");     //正则匹配： http://zhidao.baidu.com/question/337557426.html
-                Matcher mat = pat.matcher(ruleStr);
-                if(mat.find()){
-                    dbSource = mat.group(0);
-                    type1 = mat.group(1);
-                    type2 = mat.group(2);
-                }
-
-                //生成序列号
-                if(StrUtil.isNotNull(dbSource) && StrUtil.isNotNull(type1)){
-                    try {
-                        //三个参数中也有可能带变量，所以，再处理一次变量,换成对应的值
-                        dbSource = getValueByFiled(requestData,ruleStr);
-                        type1 = getValueByFiled(requestData,type1);
-                        type2 = getValueByFiled(requestData,type2);
-
-                        //根据table生成序列号
-                        value = String.valueOf(SeqNumHelper.getNewSeqNum(dbSource, type1, type2));
-                    } catch (DataAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                /****************************
-                 * 日期处理
-                 * $datetime('yyyy-mm-dd hh:mm:ss')
-                 * $datetime('日期格式（同JAVA）')
-                 ***************************/
-            }else if(ruleStr.startsWith("$datetime")){  //时间的处理
-                String dateFormat = "yyyy-MM-dd hh:mm:ss";
-                //使用正则，匹配 $datetime('yyyy-mm-dd hh:mm:ss') 这样的，得到参数
-                Pattern pat = Pattern.compile("\'(.*?)\'");     //正则匹配： http://zhidao.baidu.com/question/337557426.html
-                Matcher mat = pat.matcher(ruleStr);
-                if(mat.find()){
-                    dateFormat = mat.group(0);
-                }
-
-                //生成日期
-                value = DateUtil.getCurrentDay(dateFormat);
-            }
-
-            /****************************
-             * 其它，即$data\$session\$cookie
-             ***************************/
-        }else{
-            value = getAllFiledValue(requestData,ruleStr);
-        }
-        return value;
-    }
-
-
-    /**
-     * 根据提供的filed，得到对应的值
-     * 包括以下格式
-     * $session.service_id
-     * $data.unit
-     * $cookie.abc
-     * @param requestData
-     * @param filed
-     * @return
-     */
-    private String getValueByFiled(RequestData requestData,String filed){
-        String value = "";
-
-        HashMap data = getDataMapByFiled(requestData, filed);   //得到$session.service_id中$session的hashmap
-        String key = getFiledKey(filed);    //得到$session.service_id中的service_id
-
-        if(data.containsKey(key)){
-            value = (String)data.get(key);  //得到具体的值
-        }
-
-        return value;
-    }
-
-    /**
-     * 根据filed，得到其中的key值
-     * 例如 $session.service_id 得到 service_id；$data.unit得到unit；
-     * @param filed
-     * @return
-     */
-    private String getFiledKey(String filed){
-        String key = filed.toLowerCase().trim();
-
-        if(filed.startsWith("$")){
-            key = StrUtil.replaceAll(key,"$DATA.","");
-            key = StrUtil.replaceAll(key,"$SESSION.","");
-            key = StrUtil.replaceAll(key,"$COOKIE.","");
-        }
-
-        return key;
-    }
-
-    /**
-     * 根据提供的filed，确定这个是在哪个数据集中（request的data、session、cookie）
-     * @param requestData
-     * @param filed
-     * @return
-     */
-    private HashMap getDataMapByFiled(RequestData requestData,String filed){
-        filed = filed.toUpperCase().trim(); //转为大写，并去除前后空格
-        HashMap checkObjMap = requestData.getData();
-        if(filed.startsWith("$SESSION.")){
-            checkObjMap = requestData.getSession();
-        } else if(filed.startsWith("$COOKIE.")){
-            checkObjMap = requestData.getCookie();
-        }
-
-        return checkObjMap;
-    }
-
-    /**
-     * 根据提供的filed，将一个值设置在数据集中（request的data、session、cookie）
-     * @param requestData
-     * @param filed
-     * @param value
-     */
-    private void putDataMapByFiled(RequestData requestData,String filed,String value){
-        if(filed.startsWith("$SESSION.")){
-            requestData.getSession().put(filed,value);
-        } else if(filed.startsWith("$COOKIE.")){
-            requestData.getCookie().put(filed,value);
-        }else{
-            requestData.getData().put(filed,value);
-        }
-    }
-
-
-    /**
      * 前切面:initdata
      * @param data
      */
@@ -377,10 +205,15 @@ public abstract class CommonCommand implements Command{
     }
 
 
-
-
-    public String publicExecute(RequestData requestData, HttpServletRequest request, JSONObject commandConfig) throws DataAccessException{
-        String returnStr = "";
+    /**
+     * 框架层执行，会根据config.json中的配置，做相应的业务逻辑
+     * @param requestData
+     * @param request
+     * @param commandConfig
+     * @return
+     * @throws DataAccessException
+     */
+    public void publicExecute(RequestData requestData, HttpServletRequest request, JSONObject commandConfig,ResponseData responseData) throws DataAccessException{
 
         //开始 execute 段处理
         JSONObject executeListJsonObject = commandConfig.getJSONObject("execute");  //  "execute":{
@@ -414,22 +247,18 @@ public abstract class CommonCommand implements Command{
                 sql = this.getAllFiledValue(requestData,sql);
 
                 if(sql.startsWith("SELECT")){
-                    //TODO 这里应该处理结果集、处理分页
-                    List<JSONObject> list = dao.select(sql);
-
-                    //TODO 怎么把 list，结合 config.json 中的 return 参数，做对应的返回
-
+                    responseData.setRows(dao.select(sql));  //查询SQL，并将结果集，返回成 list<JSONObject>格式，并放到 responseData 中
                 }else if(sql.startsWith("INSERT")){
-                    dao.insert(sql);
+                    //TODO 可能还不支持 INSERT INTO unit ({$ALL_COLUMN}) values ({$DATA}) 这样的all_column写法
+                    responseData.setState(String.valueOf(dao.insert(sql)));
                 }else if(sql.startsWith("DELETE")){
-                    dao.delete(sql);
+                    responseData.setState(String.valueOf(dao.delete(sql)));
                 }else if(sql.startsWith("UPDATE")){     //UPDATE unit SET type='xx',state=1 WHERE service_id={$data.service_id}
-                    dao.update(sql);
+                    responseData.setState(String.valueOf(dao.update(sql)));
                 }
             }
         }
 
-        return returnStr;
     }
 
 
@@ -437,20 +266,15 @@ public abstract class CommonCommand implements Command{
      * 前切面:initdata
      * @param data
      */
-    private String aspectFrontForExecute(RequestData data, HttpServletRequest request)  throws DataAccessException{
-
+    private void aspectFrontForExecute(RequestData data, HttpServletRequest request,ResponseData responseData)  throws DataAccessException{
         //TODO 根据config.json中配置的切面,动态加载切面类,并执行
-        return "";
     }
 
     /**
      * 后切面:initdata
      * @param data
      */
-    private String aspectBackForExecute(String returnStr,RequestData data, HttpServletRequest request)  throws DataAccessException{
-        String overReturn = returnStr;
-
-        return overReturn;
+    private void aspectBackForExecute(RequestData data, HttpServletRequest request,ResponseData responseData)  throws DataAccessException{
     }
 
 

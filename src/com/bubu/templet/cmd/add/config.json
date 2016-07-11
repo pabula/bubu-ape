@@ -82,11 +82,19 @@
     ****************************************/
   "return":{
     "url":"",     //页面
-    "param":[     //返回的参数
-      "unit.id",
-      "unit.name",
-      "unit.intro",
-      "unit.add_datetime"
+    "param":{ //返回的参数,支持变量
+      "unit.id":"$data.unit.id",
+      "unit.name":"$data.unit.name",
+      "unit.intro":"$data.unit.intro",
+      "unit.add_datetime":"$data.unit.add_datetime",
+      "unit.class_name":"$return.unit.class_name:"
+    },
+    "row_column":[  //要返回的数据集字段，*表示所有，也可以用数组方式，列出只显示的字段
+      "*"
+    ],
+    "row_column_filter":[ //要过滤掉不显示的数据集字段，不写，则不过滤，写了，则过滤掉，不会显示
+      "unit.service_id",
+      "unit.modify_datetime"
     ]
   }
 

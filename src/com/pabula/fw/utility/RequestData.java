@@ -19,6 +19,9 @@ public class RequestData {
     HashMap session = new HashMap();
     HashMap cookie = new HashMap();
 
+    //返回值
+    String returnValue = "";
+
 
     public RequestData(HttpServletRequest request, HttpServletResponse response) {
         this.request = request;
@@ -55,5 +58,13 @@ public class RequestData {
 
     public void setCookie(HashMap cookie) {
         this.cookie = cookie;
+    }
+
+    public String getReturnValue() {
+        return returnValue;
+    }
+
+    public void setReturnValue(String returnValue) {
+        this.returnValue = returnValue;
     }
 }

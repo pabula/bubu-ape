@@ -5,6 +5,8 @@
         SQL语句必须带上数据源，否则不方便执行
     $DATA
         request请求中的所有数据
+    $RETURN
+        要返回的数据（在execute方法体中才生效）
     $SESSION
         session中所有数据
     $COOKIE
@@ -49,6 +51,13 @@
     def     设置默认值，判断字段的值如果为空，则给予默认值
     isNull  不能为空
     isNum   必须为数字
+
+【execute段】
+    url     要返回的页面URL
+    param   要返回的参数名称、参数值的清单，支持变量 "unit.intro":"$data.unit.intro",
+    row_column  要返回的数据行中，要显示的字段列表，如果写*，则表示所有   "unit.id","unit_name"
+    row_column_filter   要返回的数据行中，要过滤掉（不显示）的字段集合，如果不写，则没有，可以与row_column合用
+
 
 
 【变量】
