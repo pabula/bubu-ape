@@ -5,7 +5,7 @@
         SQL语句必须带上数据源，否则不方便执行
     $DATA
         request请求中的所有数据
-    $RETURN
+    $RETURN     //TODO 不理解，没有想起来这个怎么用
         要返回的数据（在execute方法体中才生效）
     $SESSION
         session中所有数据

@@ -44,11 +44,11 @@
   "return":{
     "url":"",
     "param":{
-      "unit.id":"$data.unit.id",
-      "unit.name":"$data.unit.name",
-      "unit.intro":"$data.unit.intro",
-      "unit.add_datetime":"$data.unit.add_datetime",
-      "unit.class_name":"$return.unit.class_name:"
+      "unit.id":"{$data.unit.id}",
+      "unit.name":"{$data.unit.name}",
+      "unit.intro":"{$data.unit.intro}",
+      "unit.add_datetime":"{$data.unit.add_datetime}",
+      "unit.class_name":"{$return.unit.class_name}"
     },
     "row_column":[
         "*"

@@ -1,14 +1,15 @@
 package com.pabula.fw.utility;
 
 import com.pabula.common.util.StrUtil;
+import com.pabula.fw.cmd.FunctionParseUtil;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 将请求中的所有必要信息,放在这里
@@ -120,6 +121,142 @@ public class RequestData {
         }
 
         return map;
+    }
+
+
+
+
+
+
+    /**
+     * 获得一个变量字符串对应的值(包括了字符串中的 变量 与 方法)
+     * @param varString
+     * @return
+     */
+    public  String parseVar(String varString){
+
+        String value;
+
+        /****************************
+         * 1.替换掉 变量
+         ***************************/
+        value = replaceVar(varString);
+
+        /****************************
+         * 2.替换掉 函数
+         ***************************/
+        value = FunctionParseUtil.parse(value);
+
+
+        return value;
+
+    }
+
+
+    /**
+     * 根据提供的str，替换掉所有的变量，得到最终的字符串
+     * @param varString
+     * @return
+     */
+    private String replaceVar(String varString){
+        String value = varString;
+
+        //使用正则，匹配 $datetime('yyyy-mm-dd hh:mm:ss') 这样的，得到参数
+        Pattern pat = Pattern.compile("\\{(.*?)\\}");     //正则匹配： {}
+        Matcher mat = pat.matcher(value);
+
+        while (mat.find()){
+            String findVar = mat.group();   //找到的变量字符串 {$data.id}
+
+            String findVarName = findVar;
+            //去掉filed前后的{}
+            if(findVarName.startsWith("{")){
+                findVarName = findVarName.substring(1);
+            }
+            if(findVarName.endsWith("}")){
+                findVarName = findVarName.substring(0,findVarName.length()-1);
+            }
+
+            String varValue = getValueFromVar(findVarName);    //得到变量对应的值
+
+            StrUtil.replaceAll(value,findVar,varValue);    //替换掉原文中的变量为值
+        }
+
+        return value;
+    }
+
+
+    /**
+     * 根据提供的变量，设置对应变量集的值
+     * @param var
+     * @param value
+     */
+    public void setDataByKey(String var,String value){
+        var = var.toUpperCase();
+
+        String key = getVarKey(var);    //得到var的key，即变量名称
+        value = parseVar(value);    //得到实际的值，其中可能有变量和方法
+
+        if(var.startsWith("$SESSION.")){
+            getSession().put(key,value);
+        } else if(var.startsWith("$COOKIE.")){
+            getCookie().put(key,value);
+        }else{
+            getData().put(key,value);
+        }
+    }
+
+
+
+    /**
+     * 根据变量名，得到值
+     * @param var
+     * @return
+     */
+    public String getValueFromVar(String var){
+        String value;
+
+        HashMap data = getDataMapByVar(var);  //确定变量在哪里（DATA\SESSION\COOKIE）
+        String dataKey = getVarKey(var);    //得到变量的KEY值
+        value = (String)data.get(dataKey);  //  从集合中，取得变量的值
+
+        return value;
+    }
+
+    /**
+     * 根据var得到对应的数据集合
+     * @param var
+     * @return
+     */
+    public HashMap getDataMapByVar(String var){
+        var = var.toUpperCase().trim(); //转为大写，并去除前后空格
+
+        HashMap checkObjMap = getData();
+        if(var.startsWith("$SESSION.")){
+            checkObjMap = getSession();
+        } else if(var.startsWith("$COOKIE.")){
+            checkObjMap = getCookie();
+        }
+
+        return checkObjMap;
+    }
+
+
+    /**
+     * 根据filed，得到其中的key.  例如 $session.service_id 得到 service_id；$data.unit得到unit；
+     * @param var
+     * @return
+     */
+    private static String getVarKey(String var){
+        String key = var.toUpperCase().trim();
+
+        if(var.startsWith("$")){
+            key = StrUtil.replaceAll(key,"$DATA.","");
+            key = StrUtil.replaceAll(key,"$SESSION.","");
+            key = StrUtil.replaceAll(key, "$COOKIE.", "");
+        }
+
+        return key;
     }
 
 

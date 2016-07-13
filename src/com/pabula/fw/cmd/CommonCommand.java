@@ -10,7 +10,6 @@ import com.pabula.fw.utility.RequestData;
 import com.pabula.fw.utility.ResponseData;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.Iterator;
 
 /**
@@ -27,20 +26,6 @@ public abstract class CommonCommand implements Command{
      */
     public void main(RequestData requestData,ResponseData responseData ,Command command, JSONObject commandConfig,ValidateUtil validate) throws DataAccessException{
 
-
-
-        /***************************************
-         * 数据处理:通用处理+前切面+CMD实现+后切面      TODO 要移到validate的下面
-         **************************************/
-
-        //先进行一次标准化的数据处理,再交给客户自己的command
-        publicInitData(requestData,commandConfig);
-
-        aspectFrontForInitdata(requestData);    //aspect: 前置切面
-        initdata(requestData);  //CMD自己实现的初始数据
-        aspectBackForInitdata(requestData); //aspect: 后置切面
-
-
         /***************************************
          * VALIDATE:通用处理+前切面+CMD实现+后切面
          **************************************/
@@ -51,6 +36,16 @@ public abstract class CommonCommand implements Command{
         aspectBackForValidate(requestData, validate);    //aspect: 后置切面
 
 
+        /***************************************
+         * 数据处理:通用处理+前切面+CMD实现+后切面
+         **************************************/
+
+        //先进行一次标准化的数据处理,再交给客户自己的command
+        publicInitData(requestData, commandConfig);
+
+        aspectFrontForInitdata(requestData);    //aspect: 前置切面
+        initdata(requestData);  //CMD自己实现的初始数据
+        aspectBackForInitdata(requestData); //aspect: 后置切面
 
 
 
@@ -68,7 +63,7 @@ public abstract class CommonCommand implements Command{
 
             aspectFrontForExecute(requestData, requestData.getRequest(),responseData); //aspect 前置切面，因为这里不是最后一个执行方法，所以不需要返回值赋值
             command.execute(requestData, requestData.getRequest(),responseData);    //执行 execute
-            aspectBackForExecute(requestData, requestData.getRequest(),responseData); //aspect 后置切面
+            aspectBackForExecute(requestData, requestData.getRequest(), responseData); //aspect 后置切面
 
         } catch (DataAccessException e) {
             e.printStackTrace();
@@ -91,14 +86,14 @@ public abstract class CommonCommand implements Command{
 
         while (dataIt.hasNext()){   //"unit.id":"$seq('jiaorder','unit','{$session.service_id}')",
             String dataFiled = dataIt.next().toString();    //需要设置数据项的字段    unit.id
-            //String dataValue = InitDataUtil.getValueByFunction(requestData,dataFiled); //  根据上面的dataValueStr运算后，版值 1000
+            //String dataValue = FunctionParseUtil.getValueByFunction(requestData,dataFiled); //  根据上面的dataValueStr运算后，版值 1000
             String dataValue = dataJsonObject.getString(dataFiled);
 
             //替换value中的变量\函数
-            dataValue = InitDataUtil.getValue(requestData,dataValue);
+            dataValue = requestData.parseVar(dataValue);
 
             //设置默认值回到数据对象中
-            InitDataUtil.putDataMapByFiled(requestData,dataFiled,dataValue);
+            requestData.setDataByKey(dataFiled, dataValue);
         }
 
     }
@@ -144,12 +139,12 @@ public abstract class CommonCommand implements Command{
         Iterator defIt = defJsonObject.keySet().iterator();       //枚举出所有不能为空的配置
         while (defIt.hasNext()){
             String defFiled = defIt.next().toString();    //不能为空的字段
-            HashMap data = InitDataUtil.getDataMapByFiled(requestData,defFiled);
-            if(!data.containsKey(defFiled) || StrUtil.isNull((String)data.get(defFiled))){    //如果为空了
-                String value = (String) data.get(defFiled);     //得到值
-                value = InitDataUtil.getValueByFunction(requestData,value);   //处理值中的变量
-                //设置默认值回到数据对象中
-                InitDataUtil.putDataMapByFiled(requestData,defFiled,value);
+            String value = requestData.getValueFromVar(defFiled);
+
+            //如果对应的值为空，则设置默认值
+            if(StrUtil.isNull(value)){
+                String defValue = defJsonObject.get(defFiled).toString();
+                requestData.setDataByKey(defFiled, defValue);
             }
         }
 
@@ -158,8 +153,10 @@ public abstract class CommonCommand implements Command{
         Iterator isNullIt = isNullJsonObject.keySet().iterator();       //枚举出所有不能为空的配置
         while (isNullIt.hasNext()){
             String isNullFiled = isNullIt.next().toString();    //不能为空的字段
-            HashMap data = InitDataUtil.getDataMapByFiled(requestData,isNullFiled);
-            if(!data.containsKey(isNullFiled) || StrUtil.isNull((String)data.get(isNullFiled))){    //如果为空了
+            String value = requestData.getValueFromVar(isNullFiled);
+
+            //如果为空，则添加异常
+            if(StrUtil.isNull(value)){
                 validate.addError(isNullJsonObject.getString(isNullFiled)); //添加错误消息
             }
         }
@@ -168,9 +165,11 @@ public abstract class CommonCommand implements Command{
         JSONObject isNumJsonObject = validateJsonObject.getJSONObject("isNum");
         Iterator isNumIt = isNumJsonObject.keySet().iterator();       //枚举出所有必须为数字的配置
         while (isNumIt.hasNext()){
-            String isNumFiled = isNumIt.next().toString();    //不能为空的字段
-            HashMap data = InitDataUtil.getDataMapByFiled(requestData, isNumFiled);
-            if(!data.containsKey(isNumFiled) || StrUtil.isNull((String)data.get(isNumFiled))){    //如果为空了
+            String isNumFiled = isNumIt.next().toString();    //必须为数字的字段
+            String value = requestData.getValueFromVar(isNumFiled);
+
+            //如果不为数字，则添加异常
+            if(!StrUtil.isNumber(value)){
                 validate.addError(isNumJsonObject.getString(isNumFiled)); //添加错误消息
             }
         }
@@ -235,7 +234,7 @@ public abstract class CommonCommand implements Command{
                 CommonDAO dao = new CommonDAO();
                 sql = sql.toLowerCase().trim();    //统一转换成大写,并去掉前后空格
 
-                sql = InitDataUtil.getValueByVar(requestData,sql);
+                sql = requestData.parseVar(sql);
 
                 if(sql.startsWith("SELECT")){
                     responseData.setRows(dao.select(sql));  //查询SQL，并将结果集，返回成 list<JSONObject>格式，并放到 responseData 中

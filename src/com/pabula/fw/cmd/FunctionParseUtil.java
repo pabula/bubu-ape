@@ -11,106 +11,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 初始化数据工具类
+ * function解析工具类
  * Created by pabula on 16/7/1.
  */
-public class InitDataUtil {
+public class FunctionParseUtil {
 
-
-
-
-    /**
-     * 根据提供的filed，将一个值设置在数据集中（request的data、session、cookie）
-     * @param requestData
-     * @param filed
-     * @param value
-     */
-    public static void putDataMapByFiled(RequestData requestData,String filed,String value){
-        filed = filed.toUpperCase();
-        if(filed.startsWith("$SESSION.")){
-            requestData.getSession().put(filed,value);
-        } else if(filed.startsWith("$COOKIE.")){
-            requestData.getCookie().put(filed,value);
-        }else{
-            requestData.getData().put(filed,value);
-        }
-    }
-
-
-    /**
-     * 获得一个变量字符串对应的值(包括了字符串中的 变量 与 方法)
-     * @param requestData
-     * @param varString
-     * @return
-     */
-    public static String getValue(RequestData requestData,String varString){
-
-        String value = varString;
-
-
-        /****************************
-         * 1.替换掉 变量
-         ***************************/
-        value = getValueByVar(requestData,varString);
-
-        /****************************
-         * 2.替换掉 函数
-         ***************************/
-        value = getValueByFunction(requestData,value);
-
-
-        return value;
-
-    }
-
-
-
-    /**
-     * 根据提供的str，替换掉所有的变量，得到最终的字符串
-     * @param requestData
-     * @param varString
-     * @return
-     */
-    public static String getValueByVar(RequestData requestData,String varString){
-        String value = varString;
-
-        //使用正则，匹配 $datetime('yyyy-mm-dd hh:mm:ss') 这样的，得到参数
-        Pattern pat = Pattern.compile("\\{(.*?)\\}");     //正则匹配： {}
-        Matcher mat = pat.matcher(value);
-
-        while (mat.find()){
-            String findVar = mat.group();   //找到的变量字符串 {$data.id}
-
-            String findVarName = findVar;
-            //去掉filed前后的{}
-            if(findVarName.startsWith("{")){
-                findVarName = findVarName.substring(1);
-            }
-            if(findVarName.endsWith("}")){
-                findVarName = findVarName.substring(0,findVarName.length()-1);
-            }
-
-            String varValue = findVarName;    //将变量替换为值
-
-            HashMap dataMap = getDataMapByFiled(requestData, findVarName);   //得到$session.service_id中$session的hashmap
-            String key = getVarKey(findVarName);    //得到$session.service_id中的service_id
-
-            if(dataMap.containsKey(key)){
-                varValue = (String)dataMap.get(key);  //得到具体的值
-            }
-
-            StrUtil.replaceAll(value,findVar,varValue);    //替换掉原文中的变量为值
-        }
-
-        return value;
-    }
 
     /**
      * 根据提供的值（可能是带变量的），将值中的变量替换后返回具体的值
      * @param functionStr
      * @return
      */
-    public  static String getValueByFunction(RequestData requestData, String functionStr){
+    public static String parse(String functionStr){
 
         String value = functionStr;
 
@@ -145,8 +57,6 @@ public class InitDataUtil {
                         type2 = type2.substring(1,type2.length()-1);    //去掉''
                     }
                 }
-
-
 
 
                 //生成序列号
@@ -189,7 +99,6 @@ public class InitDataUtil {
         return value;
     }
 
-
 //
 //
 //    /**
@@ -222,42 +131,10 @@ public class InitDataUtil {
 
 
 
-    /**
-     * 根据提供的filed，确定这个是在哪个数据集中（request的data、session、cookie）
-     * @param requestData
-     * @param filed
-     * @return
-     */
-    public static HashMap getDataMapByFiled(RequestData requestData,String filed){
-        filed = filed.toUpperCase().trim(); //转为大写，并去除前后空格
-
-        HashMap checkObjMap = requestData.getData();
-        if(filed.startsWith("$SESSION.")){
-            checkObjMap = requestData.getSession();
-        } else if(filed.startsWith("$COOKIE.")){
-            checkObjMap = requestData.getCookie();
-        }
-
-        return checkObjMap;
-    }
 
 
-    /**
-     * 根据filed，得到其中的key.  例如 $session.service_id 得到 service_id；$data.unit得到unit；
-     * @param var
-     * @return
-     */
-    private static String getVarKey(String var){
-        String key = var.toUpperCase().trim();
 
-        if(var.startsWith("$")){
-            key = StrUtil.replaceAll(key,"$DATA.","");
-            key = StrUtil.replaceAll(key,"$SESSION.","");
-            key = StrUtil.replaceAll(key,"$COOKIE.","");
-        }
 
-        return key;
-    }
 
 
     public static void main(String[] args) throws Exception {

@@ -3,7 +3,6 @@ package com.pabula.fw;
 import com.alibaba.fastjson.JSONObject;
 import com.pabula.common.util.StrUtil;
 import com.pabula.common.util.ValidateUtil;
-import com.pabula.fw.cmd.CommonCommand;
 import com.pabula.fw.exception.DataAccessException;
 import com.pabula.fw.exception.RuleException;
 import com.pabula.fw.exception.SysException;
@@ -86,8 +85,6 @@ public class BuBuController extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 
 
-
-
 		/********************************
 		 * 初始化数据:根据请求,分析出这个请求的意义,要请求哪个业务包,哪个CMD去接收这个请求
 		 *********************************/
@@ -132,6 +129,9 @@ public class BuBuController extends HttpServlet {
 			command.main(requestData,responseData,command,commandJsonObject,validate);
 
 
+			/********************************
+			 * 得到要返回给前台的值
+			 *********************************/
 			//从responseData中，得到要返回给前台的数据
 			String cmdReturnStr = responseData.getReturnJSON();
 
