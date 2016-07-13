@@ -4,29 +4,30 @@
       "$db.jiaorder.unit"
   ],
 
-  "data":{
-      "unit.id":"$seq('jiaorder','unit','{$session.service_id}')",
-      "unit.order_num":"$data.unit.id",
-      "unit.add_datetime":"$datetime('yyyy-mm-dd hh:mm:ss')",
-      "unit.service_id":"{$SESSION.SERVICE_ID}",
-      "unit.sate":"-1"
+  "validate":{
+    "def":{
+      "$DATA.unit.type":"1",
+      "$DATA.unit.class":"1000"
+    },
+    "isNull":{
+      "$DATA.unit.name":"名称不能为空",
+      "$DATA.unit.intro":"描述不能为空",
+      "$SESSION.SERVICE_ID":"得到不您的系统ID,您无法使用此系统"
+    },
+    "isNum":{
+      "$DATA.unit.state":"状态必须为数字",
+      "$DATA.type":"操作类型必须为数字"
+    }
   },
 
-  "validate":{
-      "def":{
-        "unit.type":"1",
-        "unit.class":"1000"
-      },
-      "isNull":{
-          "unit.name":"名称不能为空",
-          "unit.intro":"描述不能为空",
-          "$SESSION.SERVICE_ID":"得到不您的系统ID,您无法使用此系统"
-      },
-      "isNum":{
-          "unit.state":"状态必须为数字",
-          "type":"操作类型必须为数字"
-      }
+  "data":{
+      "$data.unit.id":"$seq('jiaorder','unit','{$session.service_id}')",
+      "$data.unit.order_num":"{$data.unit.id}",
+      "$data.unit.add_datetime":"$datetime('yyyy-MM-dd HH:mm:ss')",
+      "$data.unit.service_id":"{$SESSION.SERVICE_ID}",
+      "$data.unit.sate":"-1"
   },
+
 
   "execute":{
       "add":{

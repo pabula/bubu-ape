@@ -4,6 +4,7 @@ import com.pabula.common.util.ValidateUtil;
 import com.pabula.fw.cmd.CommonCommand;
 import com.pabula.fw.exception.DataAccessException;
 import com.pabula.fw.utility.RequestData;
+import com.pabula.fw.utility.ResponseData;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -24,6 +25,11 @@ public class add extends CommonCommand{
 
     @Override
     public String execute(RequestData $DATA, HttpServletRequest request) throws DataAccessException {
+        return null;
+    }
+
+    @Override
+    public String execute(RequestData $DATA, HttpServletRequest request, ResponseData responseData) throws DataAccessException {
         return null;
     }
 }

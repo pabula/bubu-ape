@@ -42,10 +42,12 @@
     $datetime       默认生成全路径的日期
 
     写在后面的规则，可以使用前台规则中产生的新变量，比如
-        "unit.id":"$seq('unit')",
-        "unit.order_num":"$data.unit.id",
+        "$data.unit.id":"$seq('unit')",
+        "$data.unit.order_num":"$data.unit.id",
 
     data段，是应用在initdata时，是一个强制写数据的段，是强制写，是强制写，是强制写。 没有条件
+
+    可以写$data\$session\$cookie三个数据域,即要加入数据域前缀
 
 【validate段】
     def     设置默认值，判断字段的值如果为空，则给予默认值

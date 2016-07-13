@@ -38,8 +38,8 @@ public class BuBuController extends HttpServlet {
 	String classPath = "";
 	//业务实体名称
 	String className = "";
-	//根的业务包
-	String rootPackages = "";
+	//CMD类全路径
+	String commandClassPath = "";
 
 
 	public void doPost(HttpServletRequest request,
@@ -113,13 +113,13 @@ public class BuBuController extends HttpServlet {
 			/********************************
 			 * 根据请求,找到对应的COMMAND
 			 *********************************/
-			Command command = getCommand(classPath,className);
+			Command command = getCommand();
 			ValidateUtil validate = new ValidateUtil();
 
 			/********************************
 			 * 根据请求,读取COMMAND对应的 JSON CONFIG
 			 *********************************/
-			JSONObject commandJsonObject = this.getConfig(command,classPath,className);
+			JSONObject commandJsonObject = this.getConfig(command);
 
 
 			/********************************
@@ -204,7 +204,7 @@ public class BuBuController extends HttpServlet {
 //		String realPath = this.getServletContext().getRealPath("/");
 
 		//根的业务包
-		rootPackages = this.getServletConfig().getInitParameter("packages");
+		String rootPackages = this.getServletConfig().getInitParameter("packages");
 		String context = this.getServletConfig().getInitParameter("context");	//URL的上下文
 
 		//请求的URL类似  /bubu/jiaorder/product/unit/add
@@ -212,11 +212,14 @@ public class BuBuController extends HttpServlet {
 		String restURL = requestURI.substring(requestURI.indexOf(context)+context.length());
 
 		//业务主包名称
-		classPath = restURL.substring(0,restURL.lastIndexOf("/"));
+		classPath = rootPackages + restURL.substring(0,restURL.lastIndexOf("/"));
+		classPath = StrUtil.replaceAll(classPath,"/",".") ;
 
 		//业务实体名称
-		className = restURL.substring(restURL.lastIndexOf("/"));
+		className = restURL.substring(restURL.lastIndexOf("/") + 1);
 
+		//类的全路径
+		commandClassPath = classPath + ".cmd." + className +"." + className;
 	}
 
 
@@ -225,15 +228,13 @@ public class BuBuController extends HttpServlet {
 	 * 读取.json文件,并返回一个 JSONObject对象
 	 * @return
 	 */
-	private JSONObject getConfig(Command command,String packagePath,String busiName){
-
-		String jsonFilePath = packagePath + busiName;
+	private JSONObject getConfig(Command command){
 
 		JSONObject jsonObject = new JSONObject();
 
-		if(configJsonCache.containsKey(jsonFilePath)){        //如果存在于缓存中,则直接返回
+		if(configJsonCache.containsKey(commandClassPath)){        //如果存在于缓存中,则直接返回
 
-			jsonObject = (JSONObject)configJsonCache.get(jsonFilePath);
+			jsonObject = (JSONObject)configJsonCache.get(commandClassPath);
 
 		}else{
 
@@ -241,7 +242,7 @@ public class BuBuController extends HttpServlet {
 			jsonObject = JSONObject.parseObject(JsonContext);
 
 			//添加进缓存
-			configJsonCache.put(jsonFilePath,jsonObject);
+			configJsonCache.put(commandClassPath,jsonObject);
 
 		}
 
@@ -288,22 +289,21 @@ public class BuBuController extends HttpServlet {
 	 * @return
 	 * @throws SysException
      */
-	private Command getCommand(String packagePath,String busiName) throws SysException {
+	private Command getCommand() throws SysException {
 
 		Command cmd = null;
 
-		String className = packagePath + ".cmd." + busiName;
-		System.err.println("动态command路径： " + className);
+		System.err.println("动态command路径： " + this.commandClassPath);
 
 		//先从缓存中读取
-		if(commandClassCache.containsKey(className)){
+		if(commandClassCache.containsKey(commandClassPath)){
 
-			cmd = (Command) commandClassCache.get(className);
+			cmd = (Command) commandClassCache.get(commandClassPath);
 
 		}else{	//缓存没有时,重新加载
 			try {
 				//动态创建vo类
-				cmd = (Command) Class.forName(className).newInstance();
+				cmd = (Command) Class.forName(commandClassPath).newInstance();
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (InstantiationException e) {
@@ -313,10 +313,12 @@ public class BuBuController extends HttpServlet {
 			}
 
 			if (cmd == null) {
-				throw new SysException("命令请求无法受理，请检查请求的action是否正确 " + className);
+				throw new SysException("命令请求无法受理，请检查请求的action是否正确 " + commandClassPath);
+			}else{
+				commandClassCache.put(commandClassPath,cmd);	//如果CMD创建成功,则添加至缓存
 			}
 
-			commandClassCache.put(className,cmd);
+
 		}
 
 

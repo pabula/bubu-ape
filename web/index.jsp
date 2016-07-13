@@ -6,5 +6,12 @@
   </head>
   <body>
   $END$
+
+  <form action="bubu/product/unit/add" method="post">
+    <input name="unit_name" id="unit_name" type="text">
+    <input name="unit_intro" id="unit_intro" type="text">
+    <button type="submit">提交!</button>
+  </form>
+
   </body>
 </html>

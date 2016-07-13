@@ -11,7 +11,7 @@
         <init-param>
             <!--此项目的根package-->
             <param-name>packages</param-name>
-            <param-value>com.bubu</param-value>
+            <param-value>com</param-value>
         </init-param>
 
         <init-param>
