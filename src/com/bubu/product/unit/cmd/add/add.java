@@ -15,7 +15,7 @@ public class add extends CommonCommand{
 
     @Override
     public void initdata(RequestData $DATA) {
-        $DATA.setDataByKey("unit.class_name","中国人");
+        $DATA.put("unit.class_name","中国人");
     }
 
     @Override
@@ -27,6 +27,6 @@ public class add extends CommonCommand{
     @Override
     public void execute(RequestData $DATA, HttpServletRequest request, ResponseData responseData) throws DataAccessException {
         System.err.println("这是自己CMD的EXECUTE");
-        $DATA.setDataByKey("unit.class_name","中国人2222");
+        $DATA.put("unit.class_name","中国人2222");
     }
 }

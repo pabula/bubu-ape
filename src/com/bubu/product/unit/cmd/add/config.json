@@ -36,7 +36,20 @@
           "CACHE_RELOAD":"true",
           "SQL":"jiaorder:INSERT INTO unit ({$ALL_COLUMN}) values ({$DATA})",
           "IS_BATCH":"false",
-          "IS_ROLLBACK":"false"
+          "IS_ROLLBACK":"false",
+          "SQL":{
+              "DB":"jiaorder",
+              "TABLE":"unit",
+              "COLUMN":"{$ALL_COLUMN}",
+              "VALUES":"{$DATA}",
+              "LEFT_JOIN":"",
+              "WHERE":"",
+              "LIMIT":"",
+              "GROUP":"",
+              "HAVING":"",
+              "ORDER":"",
+              "DESC":""
+          }
       }
   },
 

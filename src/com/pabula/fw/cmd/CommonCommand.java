@@ -104,7 +104,7 @@ public abstract class CommonCommand implements Command{
             dataValue = requestData.parseVar(dataValue);
 
             //设置默认值回到数据对象中
-            requestData.setDataByKey(dataFiled, dataValue);
+            requestData.put(dataFiled, dataValue);
         }
 
     }
@@ -155,7 +155,7 @@ public abstract class CommonCommand implements Command{
             //如果对应的值为空，则设置默认值
             if(StrUtil.isNull(value)){
                 String defValue = defJsonObject.get(defFiled).toString();
-                requestData.setDataByKey(defFiled, defValue);
+                requestData.put(defFiled, defValue);
             }
         }
 

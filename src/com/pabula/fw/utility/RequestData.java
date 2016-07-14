@@ -191,7 +191,7 @@ public class RequestData {
      * @param var
      * @param value
      */
-    public void setDataByKey(String var,String value){
+    public void put(String var, String value){
         var = var.toUpperCase();
 
         String key = getVarKey(var);    //得到var的key，即变量名称
