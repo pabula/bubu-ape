@@ -37,7 +37,7 @@
           "SQL":"jiaorder:INSERT INTO unit ({$ALL_COLUMN}) values ({$DATA})",
           "IS_BATCH":"false",
           "IS_ROLLBACK":"false",
-          "SQL":{
+          "SQL2":{    //TODO 这里要处理
               "DB":"jiaorder",
               "TABLE":"unit",
               "COLUMN":"{$ALL_COLUMN}",
@@ -48,7 +48,8 @@
               "GROUP":"",
               "HAVING":"",
               "ORDER":"",
-              "DESC":""
+              "DESC":"",
+              "SQL":""    //可以自定义SQL,但是上面的 DB\TABLE必须要写
           }
       }
   },
