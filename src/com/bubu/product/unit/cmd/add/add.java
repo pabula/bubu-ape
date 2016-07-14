@@ -14,22 +14,19 @@ import javax.servlet.http.HttpServletRequest;
 public class add extends CommonCommand{
 
     @Override
-    public String initdata(RequestData $DATA) {
-        return null;
+    public void initdata(RequestData $DATA) {
+        $DATA.setDataByKey("unit.class_name","中国人");
     }
 
     @Override
     public void validate(RequestData $DATA, ValidateUtil validate) {
-
+        System.err.println("这是自己CMD的 validate");
+        //validate.addError($DATA.getValueFromVar("$data.unit.name"));
     }
 
     @Override
-    public String execute(RequestData $DATA, HttpServletRequest request) throws DataAccessException {
-        return null;
-    }
-
-    @Override
-    public String execute(RequestData $DATA, HttpServletRequest request, ResponseData responseData) throws DataAccessException {
-        return null;
+    public void execute(RequestData $DATA, HttpServletRequest request, ResponseData responseData) throws DataAccessException {
+        System.err.println("这是自己CMD的EXECUTE");
+        $DATA.setDataByKey("unit.class_name","中国人2222");
     }
 }

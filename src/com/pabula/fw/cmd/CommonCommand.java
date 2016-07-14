@@ -5,6 +5,7 @@ import com.pabula.common.util.StrUtil;
 import com.pabula.common.util.ValidateUtil;
 import com.pabula.dao.CommonDAO;
 import com.pabula.fw.exception.DataAccessException;
+import com.pabula.fw.exception.RuleException;
 import com.pabula.fw.utility.Command;
 import com.pabula.fw.utility.RequestData;
 import com.pabula.fw.utility.ResponseData;
@@ -24,7 +25,7 @@ public abstract class CommonCommand implements Command{
      * @return
      * @throws DataAccessException
      */
-    public void main(RequestData requestData,ResponseData responseData ,Command command, JSONObject commandConfig,ValidateUtil validate) throws DataAccessException{
+    public void main(RequestData requestData,ResponseData responseData ,Command command, JSONObject commandConfig,ValidateUtil validate) throws DataAccessException,RuleException{
 
         /***************************************
          * VALIDATE:通用处理+前切面+CMD实现+后切面
@@ -34,6 +35,16 @@ public abstract class CommonCommand implements Command{
         aspectFrontForValidate(requestData, validate);   //aspect: 前置切面
         validate(requestData, validate); //CMD自己实现的validate
         aspectBackForValidate(requestData, validate);    //aspect: 后置切面
+
+        /********************************
+         * 校验数据合法性
+         *********************************/
+        if (validate.hasError()) {
+            RuleException e = new RuleException();
+            e.setErrColl(validate.getErrors());
+            throw e;
+        }
+
 
 
         /***************************************
@@ -270,8 +281,8 @@ public abstract class CommonCommand implements Command{
 
 
 
-    public abstract String initdata(RequestData $DATA) ;
+    public abstract void initdata(RequestData $DATA) ;
     public abstract void validate(RequestData $DATA, ValidateUtil validate);
-    public abstract String execute(RequestData $DATA, HttpServletRequest request) throws DataAccessException;
+    public abstract void execute(RequestData $DATA, HttpServletRequest request,ResponseData responseData) throws DataAccessException;
 
 }

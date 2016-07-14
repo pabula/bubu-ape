@@ -69,7 +69,7 @@ public class RequestData {
                 }
 
                 if (StrUtil.isNotNull(overValue)) {
-                    map.put(name, overValue);
+                    map.put(name.toUpperCase(), overValue); //KEY全部以大写方式 存储
                 }
             }
         }
@@ -93,7 +93,7 @@ public class RequestData {
             if(obj instanceof String){  //如果是字符型的
                 String value = (String)obj;
                 if (StrUtil.isNotNull(value)) {
-                    map.put(name, value);
+                    map.put(name.toUpperCase(), value);   //KEY全部以大写方式 存储
                 }
             }
         }
@@ -115,7 +115,7 @@ public class RequestData {
             for(int i = 0;i<cookies.length;i++){
                 Cookie c = cookies[i];
                 if(StrUtil.isNotNull(c.getName())){
-                    map.put(c.getName(),c.getValue());
+                    map.put(c.getName().toUpperCase(),c.getValue());  //KEY全部以大写方式 存储
                 }
             }
         }
@@ -177,9 +177,9 @@ public class RequestData {
                 findVarName = findVarName.substring(0,findVarName.length()-1);
             }
 
-            String varValue = getValueFromVar(findVarName);    //得到变量对应的值
+            String varValue = StrUtil.getNotNullStringValue(getValueFromVar(findVarName),"");    //得到变量对应的值
 
-            StrUtil.replaceAll(value,findVar,varValue);    //替换掉原文中的变量为值
+            value = StrUtil.replaceAll(value,findVar,varValue);    //替换掉原文中的变量为值
         }
 
         return value;

@@ -136,15 +136,6 @@ public class BuBuController extends HttpServlet {
 			String cmdReturnStr = responseData.getReturnJSON();
 
 
-			/********************************
-			 * 校验数据合法性
-			 *********************************/
-			if (validate.hasError()) {
-				RuleException e = new RuleException();
-				e.setErrColl(validate.getErrors());
-				throw e;
-			}
-
 
 			/********************************
 			 * COMMAND 返回值的处理
@@ -293,7 +284,7 @@ public class BuBuController extends HttpServlet {
 
 		Command cmd = null;
 
-		System.err.println("动态command路径： " + this.commandClassPath);
+		System.err.println("执行了command ： " + this.commandClassPath);
 
 		//先从缓存中读取
 		if(commandClassCache.containsKey(commandClassPath)){
@@ -304,6 +295,8 @@ public class BuBuController extends HttpServlet {
 			try {
 				//动态创建vo类
 				cmd = (Command) Class.forName(commandClassPath).newInstance();
+
+				System.err.println("新创建了command ： " + this.commandClassPath);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (InstantiationException e) {

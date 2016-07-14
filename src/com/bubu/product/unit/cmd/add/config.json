@@ -11,8 +11,7 @@
     },
     "isNull":{
       "$DATA.unit.name":"名称不能为空",
-      "$DATA.unit.intro":"描述不能为空",
-      "$SESSION.SERVICE_ID":"得到不您的系统ID,您无法使用此系统"
+      "$DATA.unit.intro":"描述不能为空"
     },
     "isNum":{
       "$DATA.unit.state":"状态必须为数字",
@@ -44,11 +43,11 @@
   "return":{
     "url":"",
     "param":{
-      "unit.id":"{$data.unit.id}",
+      "unit.id":"{$data.unit.type}",
       "unit.name":"{$data.unit.name}",
       "unit.intro":"{$data.unit.intro}",
       "unit.add_datetime":"{$data.unit.add_datetime}",
-      "unit.class_name":"{$return.unit.class_name}"
+      "unit.class_name":"{$data.unit.class_name}"
     },
     "row_column":[
         "*"

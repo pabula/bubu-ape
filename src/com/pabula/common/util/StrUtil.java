@@ -124,6 +124,11 @@ public class StrUtil {
 	 */
 	public static boolean isNumber(String str){
 		boolean isNumber = true;
+
+		if(StrUtil.isNull(str)){
+			return false;
+		}
+
 		try {
 			int tmp = Integer.parseInt(str.trim());
 			if (tmp < 0){
